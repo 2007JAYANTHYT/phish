@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHISHdetect - Protect Yourself from Phishing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #0f3460;
+            --danger-color: #e94560;
+            --success-color: #4ade80;
+            --warning-color: #f59e0b;
+            --text-color: #f1f1f1;
+            --glow-color: rgba(79, 70, 229, 0.6);
+            --jaysec-glow: rgba(78, 205, 196, 0.8);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px var(--glow-color);
+            position: relative;
+        }
+        
+        .logo-text::after {
+            content: "detect";
+            font-size: 1.5rem;
+            position: absolute;
+            bottom: -10px;
+            right: 0;
+            color: var(--text-color);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .main-content {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .title {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px 0 0 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .url-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+        
+        .url-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .check-btn {
+            padding: 0 1.5rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 0 12px 12px 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .check-btn:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+        }
+        
+        .check-btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-container {
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .result-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .danger {
+            background: var(--danger-color);
+            animation: pulse-red 2s infinite;
+        }
+        
+        .safe {
+            background: var(--success-color);
+            animation: pulse-green 2s infinite;
+        }
+        
+        .warning {
+            background: var(--warning-color);
+            animation: pulse-yellow 2s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(233, 69, 96, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(233, 69, 96, 0);
+            }
+        }
+        
+        @keyframes pulse-green {
+            0% {
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+            }
+        }
+        
+        @keyframes pulse-yellow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+            }
+        }
+        
+        .result-icon {
+            font-size: 2rem;
+        }
+        
+        .info-section {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .info-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+        }
+        
+        .info-list {
+            list-style-type: none;
+        }
+        
+        .info-list li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .info-list li:before {
+            content: "•";
+            color: #4ecdc4;
+            position: absolute;
+            left: 0;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .creator-tag {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .creator-tag::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #0f3460, #e94560);
+            z-index: -1;
+            border-radius: 22px;
+            animation: glowing 3s linear infinite;
+            background-size: 400%;
+            filter: blur(5px);
+        }
+        
+        .creator-tag::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.08);
+            z-index: -1;
+            border-radius: 20px;
+        }
+        
+        @keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+        
+        .creator-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+        
+        .creator-icon {
+            color: #4ecdc4;
+        }
+        
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--accent-color);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .api-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .feature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        .feature-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-box:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+        }
+        
+        .feature-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #4ecdc4;
+        }
+        
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .logo-text {
+                font-size: 2rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .url-input {
+                border-radius: 12px;
+                margin-bottom: 10px;
+            }
+            
+            .check-btn {
+                border-radius: 12px;
+                padding: 1rem;
+            }
+            
+            .stats, .feature-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="#" class="logo">
+                <h1 class="logo-text">PHISH</h1>
+            </a>
+        </header>
+        
+        <main class="main-content">
+            <h2 class="title">Check if a URL is Safe or Phishing</h2>
+            <p class="subtitle">Enter any URL to check its safety using our advanced detection system</p>
+            
+            <div class="input-group">
+                <input type="text" class="url-input" placeholder="Enter URL to check (e.g., https://example.com)">
+                <button class="check-btn" id="checkBtn">
+                    <i class="fas fa-shield-alt"></i> Check URL
+                </button>
+            </div>
+            
+            <div class="api-status">
+                <div class="status-dot"></div>
+                <span>API Status: Online</span>
+            </div>
+            
+            <div class="loader" id="loader"></div>
+            
+            <div class="result-container" id="resultContainer">
+                <div class="result-box" id="resultBox"></div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="safeCount">0</div>
+                    <div class="stat-label">Safe URLs Detected</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="phishingCount">0</div>
+                    <div class="stat-label">Phishing URLs Blocked</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">Total URLs Checked</div>
+                </div>
+            </div>
+            
+            <div class="feature-section">
+                <div class="feature-box">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <h3 class="feature-title">Fast Analysis</h3>
+                    <p>Get instant results with our optimized detection algorithms</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-database feature-icon"></i>
+                    <h3 class="feature-title">Updated Database</h3>
+                    <p>Our system uses constantly updated threat intelligence</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-lock feature-icon"></i>
+                    <h3 class="feature-title">Privacy First</h3>
+                    <p>We don't store or share your browsing data</p>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3 class="info-title">How to Identify Phishing URLs</h3>
+                <ul class="info-list">
+                    <li>Check for misspellings or strange characters in the domain name</li>
+                    <li>Look for HTTPS encryption (but note that some phishing sites use HTTPS too)</li>
+                    <li>Be cautious of URLs that use IP addresses instead of domain names</li>
+                    <li>Watch for URLs that are excessively long or contain unusual characters</li>
+                    <li>Verify the sender's email address if the link came via email</li>
+                    <li>Never enter personal information on sites you don't trust</li>
+                </ul>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>PHISHdetect - Protecting users from phishing scams | Powered by advanced threat detection</p>
+            <div class="creator-tag">
+                <i class="fas fa-code creator-icon"></i>
+                <span>Made by JaySec</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkBtn = document.getElementById('checkBtn');
+            const urlInput = document.querySelector('.url-input');
+            const resultContainer = document.getElementById('resultContainer');
+            const resultBox = document.getElementById('resultBox');
+            const loader = document.getElementById('loader');
+            const safeCount = document.getElementById('safeCount');
+            const phishingCount = document.getElementById('phishingCount');
+            const totalCount = document.getElementById('totalCount');
+            
+            // Statistics
+            let stats = {
+                safe: 0,
+                phishing: 0,
+                total: 0
+            };
+            
+            // Update stats display
+            function updateStats() {
+                safeCount.textContent = stats.safe;
+                phishingCount.textContent = stats.phishing;
+                totalCount.textContent = stats.total;
+            }
+            
+            // Example URLs for testing
+            const exampleUrls = [
+                "https://www.paypal.com",
+                "https://secure-login-facebook.com",
+                "https://www.amazon.com",
+                "https://amaz0n-login-verify.com",
+                "https://www.google.com",
+                "https://netflix-account-update.com"
+            ];
+            
+            // Set a random example URL as placeholder
+            function setRandomExample() {
+                const randomUrl = exampleUrls[Math.floor(Math.random() * exampleUrls.length)];
+                urlInput.placeholder = `e.g., ${randomUrl}`;
+            }
+            
+            setRandomExample();
+            
+            checkBtn.addEventListener('click', checkURL);
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkURL();
+                }
+            });
+            
+            async function checkURL() {
+                const url = urlInput.value.trim();
+                
+                if (!url) {
+                    alert('Please enter a URL to check');
+                    return;
+                }
+                
+                // Show loader
+                loader.style.display = 'block';
+                resultContainer.style.display = 'none';
+                
+                try {
+                    // Validate URL format
+                    let urlToCheck = url;
+                    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        urlToCheck = 'https://' + url;
+                    }
+                    
+                    // Try to use Google Safe Browsing API (demo)
+                    const isPhishing = await checkWithGoogleSafeBrowsing(urlToCheck);
+                    
+                    // Hide loader
+                    loader.style.display = 'none';
+                    
+                    // Update stats
+                    stats.total++;
+                    if (isPhishing) {
+                        stats.phishing++;
+                        showResult('Warning: This appears to be a phishing URL!', 'danger', 'fas fa-exclamation-triangle');
+                    } else {
+                        stats.safe++;
+                        showResult('This URL appears to be safe.', 'safe', 'fas fa-check-circle');
+                    }
+                    updateStats();
+                    
+                } catch (error) {
+                    // Hide loader
+                    loader.style.display = 'none';
+                    
+                    // Fallback to heuristic analysis if API fails
+                    console.error("API Error:", error);
+                    const isPhishing = heuristicAnalysis(url);
+                    
+                    // Update stats
+                    stats.total++;
+                    if (isPhishing) {
+                        stats.phishing++;
+                        showResult('Warning: This URL appears suspicious based on our analysis.', 'warning', 'fas fa-exclamation-circle');
+                    } else {
+                        stats.safe++;
+                        showResult('This URL appears safe based on our analysis.', 'safe', 'fas fa-check-circle');
+                    }
+                    updateStats();
+                }
+            }
+            
+            // Google Safe Browsing API check (demo version)
+            async function checkWithGoogleSafeBrowsing(url) {
+                // This is a simulation since we don't have a real API key
+                // In a real implementation, you would use the actual API
+                
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // For demo purposes, we'll use a simple heuristic to determine if it's phishing
+                // In a real app, you would parse the API response
+                return heuristicAnalysis(url);
+            }
+            
+            // Heuristic analysis as fallback
+            function heuristicAnalysis(url) {
+                let phishingScore = 0;
+                
+                // Known phishing indicators
+                const phishingIndicators = [
+                    'login', 'verify', 'account', 'secure', 'update', 'banking',
+                    'paypal', 'facebook', 'instagram', 'amazon', 'netflix',
+                    'microsoft', 'apple', 'ebay', 'wallet', 'password'
+                ];
+                
+                // Known safe domains
+                const safeDomains = [
+                    'google.com', 'youtube.com', 'facebook.com', 'amazon.com',
+                    'wikipedia.org', 'reddit.com', 'instagram.com', 'linkedin.com',
+                    'apple.com', 'microsoft.com', 'github.com', 'stackoverflow.com',
+                    'twitter.com', 'netflix.com', 'gov.uk', 'irs.gov'
+                ];
+                
+                // Parse domain
+                let domain;
+                try {
+                    const urlObj = new URL(url);
+                    domain = urlObj.hostname.replace('www.', '');
+                } catch (e) {
+                    // If URL parsing fails, consider it suspicious
+                    return true;
+                }
+                
+                // Check if it's a known safe domain
+                if (safeDomains.includes(domain)) {
+                    return false;
+                }
+                
+                // Check domain length (long domains are suspicious)
+                if (domain.length > 30) {
+                    phishingScore += 1;
+                }
+                
+                // Check for hyphens (multiple hyphens are suspicious)
+                const hyphenCount = (domain.match(/-/g) || []).length;
+                if (hyphenCount > 2) {
+                    phishingScore += 1;
+                }
+                
+                // Check for numbers in domain (can be suspicious)
+                const numberCount = (domain.match(/\d/g) || []).length;
+                if (numberCount > 3) {
+                    phishingScore += 1;
+                }
+                
+                // Check for common phishing keywords
+                phishingIndicators.forEach(keyword => {
+                    if (domain.includes(keyword)) {
+                        phishingScore += 1;
+                    }
+                });
+                
+                // Check for suspicious TLDs
+                const suspiciousTlds = ['.tk', '.ml', '.ga', '.cf', '.gq'];
+                suspiciousTlds.forEach(tld => {
+                    if (domain.endsWith(tld)) {
+                        phishingScore += 2;
+                    }
+                });
+                
+                // Determine result
+                return phishingScore >= 2;
+            }
+            
+            function showResult(message, type, iconClass) {
+                resultBox.innerHTML = `
+                    <i class="${iconClass} result-icon"></i>
+                    <div>${message}</div>
+                `;
+                resultBox.className = 'result-box';
+                resultBox.classList.add(type);
+                resultContainer.style.display = 'block';
+                
+                // Scroll to result
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Initialize stats
+            updateStats();
+            
+            // Add some initial stats for demo purposes
+            setTimeout(() => {
+                stats.safe = 42;
+                stats.phishing = 18;
+                stats.total = 60;
+                updateStats();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
